@@ -25,5 +25,5 @@ runner/bin/run.x64.exe loaders/simple_rdll/bin/agent.bin
 # Contribute
 You are deeply welcome to contribute by adding your own samples :)
 
-[!IMPORTANT]
+# Disclaimer
 Provided samples are intended strictly for educational purposes and authorized security engagements only.
