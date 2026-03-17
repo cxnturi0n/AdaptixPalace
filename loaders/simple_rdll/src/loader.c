@@ -4,7 +4,6 @@
 
 /*
  * Removes RWX from DLL sections after loading, and applies the appropriate permissions based on the section characteristics
- * Masks DLL with RC4 or XOR
  */
 
 void fix_section_permissions ( DLLDATA * dll, char * src, char * dst );
