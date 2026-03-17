@@ -48,7 +48,7 @@ void go() {
 	/* allocate memory for it! */
 	dst =  KERNEL32$VirtualAlloc ( NULL, SizeOfDLL ( &dll ), MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_READWRITE );
 
-	/* load LDD into memory */
+	/* load DLL into memory */
 	LoadDLL(&dll, src, dst);
 
 	/* setup IMPORTFUNCS data structure */

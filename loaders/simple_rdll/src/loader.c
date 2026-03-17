@@ -13,7 +13,6 @@ typedef void (WINAPI * _GetVersions)();
  * Crystal Palace convention for getting ahold of data linked with this loader.
  */
 char _DLL_[0] __attribute__((section("dll")));
-char _MASK_[0] __attribute__((section("mask")));
 
 /*
  * Opt-in Dynamic Function Resolution resolver. It turns MODULE$Function into pointers.
@@ -41,7 +40,7 @@ void go() {
 	/* allocate memory for it! */
 	dst =  KERNEL32$VirtualAlloc ( NULL, SizeOfDLL ( &dll ), MEM_COMMIT | MEM_RESERVE | MEM_TOP_DOWN, PAGE_READWRITE );
 
-	/* load LDD into memory */
+	/* load DLL into memory */
 	LoadDLL(&dll, src, dst);
 
 	/* setup IMPORTFUNCS data structure */
@@ -60,6 +59,6 @@ void go() {
 		pGetVersions();
 	}
 
-	/* Free the unmasked DLL */
+	/* Free the src DLL */
 	KERNEL32$VirtualFree(src, 0, MEM_RELEASE);
 }
