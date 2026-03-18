@@ -58,7 +58,4 @@ void go() {
 	if (pGetVersions != NULL) {
 		pGetVersions();
 	}
-
-	/* Free the src DLL */
-	KERNEL32$VirtualFree(src, 0, MEM_RELEASE);
 }
