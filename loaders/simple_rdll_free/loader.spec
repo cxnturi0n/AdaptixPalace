@@ -2,24 +2,6 @@
 # AdaptixC2 RDLL loader built upon CrystalPalace https://tradecraftgarden.org/crystalpalace.html
 #
 
-x86:
-    load "bin/loader.x86.o"
-        make pic +gofirst
-
-    load "bin/util.x86.o"
-        merge
-
-    fixptrs "_caller"
-
-    dfr "_resolve" "ror13"
-
-    mergelib "../../cp/lib/libtcg.x86.zip"
-
-    push $DLL
-        link "dll"
-
-    export
-
 x64:
 	load "bin/loader.x64.o"
 		make pic +gofirst +optimize +disco
@@ -32,5 +14,10 @@ x64:
 
 	push $DLL
 		link "dll"
+	
+	load "bin/free.x64.o"
+		make object
+		export
+		link "pico"
 		
 	export

@@ -1,30 +1,23 @@
 #include <windows.h>
 #include "tcg.h"
 #include "util.h"
+#include "loader.h"
 
 /*
  * Removes RWX from DLL sections after loading, and applies the appropriate permissions based on the section characteristics
  */
 
-void fix_section_permissions ( DLLDATA * dll, char * src, char * dst );
-typedef void (WINAPI * _GetVersions)();
-
-/*
- * Crystal Palace convention for getting ahold of data linked with this loader.
- */
-char _DLL_[0] __attribute__((section("dll")));
-
 /*
  * Opt-in Dynamic Function Resolution resolver. It turns MODULE$Function into pointers.
  * See dfr "resolve" "ror13" in loader.spec
- * findModuleByHash gets a reference to the Process Environment Block (PEB) and walks the process' InMemoryOrderModuleList until it finds the target module.
- * findFunctionByHash then walks the Export Address Table (EAT) of a specific module until it finds the target function.
+ * findModuleByHash resolves a module by scanning the InMemoryOrderModuleList in the Process Environment Block (PEB).
+ * findFunctionByHash locates a function by iterating over the Export Address Table (EAT) of the resolved module.
  */
 FARPROC resolve(DWORD modHash, DWORD funcHash) {
 	HANDLE hModule = findModuleByHash(modHash);
 	return findFunctionByHash(hModule, funcHash);
 }
-
+ 
 void go() {
 	char * dst;
 	char * src;

